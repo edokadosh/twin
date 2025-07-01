@@ -16,31 +16,31 @@ using std::endl;
 
 namespace server {
 
-const size_t DEFAULT_BUFLEN = 512;
-const PCSTR DEFAULT_PORT = "12345";
+	const size_t DEFAULT_BUFLEN = 512;
+	const PCSTR DEFAULT_PORT = "12345";
 
-class Server {
- private:
-  SOCKET m_listenSocket = INVALID_SOCKET;
-  vector<SOCKET> m_clientSockets;
+	class Server {
+	private:
+		SOCKET m_listenSocket = INVALID_SOCKET;
+		vector<SOCKET> m_clientSockets;
 
-  void removeClient(SOCKET clientSocket);
+		void removeClient(SOCKET clientSocket);
 
-  static void handlePing(SOCKET clientSocket);
+		void handlePing(SOCKET clientSocket);
 
-  map<string, void (*)(SOCKET)> commandToHandler;
+		map<string, void (Server::*)(SOCKET)> commandToHandler;
 
- public:
-  Server();
-  ~Server();
+	public:
+		Server();
+		~Server();
 
 
-  void listen();
-  SOCKET acceptClient();
-  void handleClietn(SOCKET clientSocket);
+		void listen();
+		SOCKET acceptClient();
+		void handleClietn(SOCKET clientSocket);
 
-  void start();
-};
+		void start();
+	};
 
 
 }  // namespace server

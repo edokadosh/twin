@@ -14,24 +14,21 @@ using utils::NONZERO;
 
 const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
 
-int main(void)
-{
-    try {
-        SingleRunningInstanceVerifier verify;
+int main(void) {
+	try {
+		SingleRunningInstanceVerifier verify;
 
-        addToAutoruns();
+		addToAutoruns();
 
-        checkError(MessageBox(NULL, TEXT("MANAGEMENT PROGRAM IS UP"), TEXT("MANAGEMENT PROGRAM"), MB_OK), "MessageBox");
+		checkError(MessageBox(NULL, TEXT("MANAGEMENT PROGRAM IS UP"), TEXT("MANAGEMENT PROGRAM"), MB_OK), "MessageBox");
 
-        // Sleep(HOUR_MILLISEC);
-        Server s;
-        s.start();
-    } catch (const std::runtime_error& e) {
-        cerr << "Error: " << e.what() << endl;
-        return 1;
-    } catch (...) {
-        // Left blank intentionally
-    }
+		Server s;
+		s.start();
+	}
+	catch (const std::runtime_error& e) {
+		cerr << "Error: " << e.what() << endl;
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
