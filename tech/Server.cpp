@@ -1,6 +1,12 @@
 #include "Server.h"
 
 namespace server {
+	WinSockErrorException::WinSockErrorException(const string msg) : message(msg) {
+		// Left blank intentionally
+	}
+	const char* WinSockErrorException::what() const noexcept {
+		return message.c_str();
+	}
 
 	Server::Server() {
 		commandToHandler = {
@@ -27,7 +33,7 @@ namespace server {
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (iResult != 0) {
 			printf("WSAStartup failed with error: %d\n", iResult);
-			throw std::runtime_error("WSAStartup failed");
+			throw WinSockErrorException("WSAStartup failed");
 		}
 
 		ZeroMemory(&hints, sizeof(hints));
@@ -40,7 +46,7 @@ namespace server {
 		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 		if (iResult != 0) {
 			printf("getaddrinfo failed with error: %d\n", iResult);
-			throw std::runtime_error("getaddrinfo failed");
+			throw WinSockErrorException("getaddrinfo failed");
 		}
 
 		// Create a SOCKET for the server to listen for client connections.
@@ -48,7 +54,7 @@ namespace server {
 		if (m_listenSocket == INVALID_SOCKET) {
 			printf("socket failed with error: %ld\n", WSAGetLastError());
 			freeaddrinfo(result);
-			throw std::runtime_error("socket failed");
+			throw WinSockErrorException("socket failed");
 		}
 
 		// Setup the TCP listening socket
@@ -56,7 +62,7 @@ namespace server {
 		if (iResult == SOCKET_ERROR) {
 			printf("bind failed with error: %d\n", WSAGetLastError());
 			freeaddrinfo(result);
-			throw std::runtime_error("bind failed");
+			throw WinSockErrorException("bind failed");
 		}
 
 		freeaddrinfo(result);
@@ -65,7 +71,7 @@ namespace server {
 		if (iResult == SOCKET_ERROR) {
 			printf("listen failed with error: %d\n", WSAGetLastError());
 
-			throw std::runtime_error("listen failed");
+			throw WinSockErrorException("listen failed");
 		}
 	}
 
@@ -73,7 +79,7 @@ namespace server {
 		SOCKET clientSocket = accept(m_listenSocket, NULL, NULL);
 		if (clientSocket == INVALID_SOCKET) {
 			printf("accept failed with error: %d\n", WSAGetLastError());
-			throw std::runtime_error("accept failed");
+			throw WinSockErrorException("accept failed");
 		}
 		m_clientSockets.push_back(clientSocket);
 		return clientSocket;
@@ -92,7 +98,7 @@ namespace server {
 		if (sent == SOCKET_ERROR) {
 			printf("send failed with error: %d\n", WSAGetLastError());
 			removeClient(clientSocket);
-			throw std::runtime_error("send failed");
+			throw WinSockErrorException("send failed");
 		}
 		printf("Bytes sent: %d\n", sent);
 	}
@@ -106,7 +112,7 @@ namespace server {
 
 			if (sent < 0) {
 				removeClient(clientSocket);
-				throw std::runtime_error("recv failed");
+				throw WinSockErrorException("recv failed");
 			}
 			else if (sent == 0) {
 				cout << "Connection closing..." << endl;

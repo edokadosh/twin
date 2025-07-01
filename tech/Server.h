@@ -16,6 +16,15 @@ using std::endl;
 
 namespace server {
 
+	// Exception class forserver errors
+	class WinSockErrorException : public std::exception {
+	private:
+		string message;
+	public:
+		WinSockErrorException(const string msg);
+		const char* what() const noexcept;
+	};
+
 	const size_t DEFAULT_BUFLEN = 512;
 	const PCSTR DEFAULT_PORT = "12345";
 

@@ -20,7 +20,6 @@ namespace single_running_instance_verifier {
 		return message.c_str();
 	}
 
-
 	SingleRunningInstanceVerifier::SingleRunningInstanceVerifier() : m_singleInstanceMutex(CreateMutexW(NULL, false, SINGLE_INSTANCE_MUTEX_NAME)) {
 		int error_code = ::GetLastError();
 		if (error_code == ERROR_ALREADY_EXISTS) {
