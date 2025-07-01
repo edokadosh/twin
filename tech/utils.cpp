@@ -7,6 +7,7 @@ using std::wcout;
 HANDLE singleInstanceMutex;
 
 namespace utils {
+	// check GetLastError and if error accured throw runtime_error
 	int checkError(int success, std::string what_failed) {
 		int error_code = ::GetLastError();
 		if (error_code != ERROR_SUCCESS) {
@@ -18,7 +19,16 @@ namespace utils {
 		return success;
 	}
 
+	LSTATUS checkStatus(LSTATUS status, std::string what_failed) {
+		if (status != ERROR_SUCCESS) {
+			cout << what_failed << " - failed with error: " << GetLastError() << endl;
+            cout << "Error string:" << getErrString() << endl;
+            throw std::runtime_error(what_failed);
+		}
+        return status;
+	}
 
+	// get the error string of last error
 	std::string getErrString() {
 		DWORD errorMessageID = ::GetLastError();
 		if (errorMessageID == 0) {
@@ -37,6 +47,7 @@ namespace utils {
 		return message;
 	}
 
+	// add current exe to autoruns using registry
 	void addToAutoruns(void) {
 		wchar_t exe_path[MAX_PATH] = { 0 };
 
@@ -44,10 +55,10 @@ namespace utils {
 		wcout << "Current exe path: " << exe_path << endl;
 
 		HKEY hkey = NULL;
-		checkError(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
-		checkError(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path)*2+1), "RegSetValueEx");
+        checkStatus(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
+        checkStatus(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1), "RegSetValueEx");
 
-		checkError(RegCloseKey(hkey), "RegCloseKey");
+		checkStatus(RegCloseKey(hkey), "RegCloseKey");
 	}
 
 

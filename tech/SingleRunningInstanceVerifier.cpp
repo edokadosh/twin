@@ -6,6 +6,8 @@
 
 using std::exchange;
 using std::swap;
+using std::cout;
+using std::endl;
 
 using utils::checkError;
 
@@ -15,7 +17,7 @@ SingleRunningInstanceVerifier::SingleRunningInstanceVerifier() {
   m_singleInstanceMutex = CreateMutexW(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
   int error_code = ::GetLastError();
   if (error_code == ERROR_ALREADY_EXISTS) {
-    printf("Instance of program is already running!");
+    cout << "Instance of program is already running!" << endl;
     throw std::runtime_error("Instance of program is already running!");
   }
   checkError(error_code, "CreateMutexA");

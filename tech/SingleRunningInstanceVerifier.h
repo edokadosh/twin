@@ -5,6 +5,8 @@ namespace single_running_instance_verifier {
 
 const LPCWSTR SINGLE_INSTANCE_MUTEX_NAME = L"app_single_instance_mutex";
 
+// class for verifiying that only one process is running this program.
+// only one process can create an instance of this class at a time.
 class SingleRunningInstanceVerifier {
  private:
   HANDLE m_singleInstanceMutex;
