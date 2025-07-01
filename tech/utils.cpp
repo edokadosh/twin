@@ -5,7 +5,7 @@ using std::endl;
 using std::wcout;
 
 HANDLE singleInstanceMutex;
-
+std::mutex globalMutex;
 
 namespace utils {
 	int checkError(int success, std::string what_failed) {
@@ -14,17 +14,19 @@ namespace utils {
 			cout << what_failed << " - failed with error: " << error_code << endl;
 			cout << "Returned value: " << success << endl;
 			cout << "Error string:" << getErrString() << endl;
-			throw std::runtime_error("GetModuleFileNameA");
+			throw std::runtime_error(what_failed);
 		}
 		return success;
 	}
 
 	void verifySingleProgramInstance() {
-		singleInstanceMutex = CreateMutexA(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
-		if (GetLastError() == ERROR_ALREADY_EXISTS) {
+		singleInstanceMutex = CreateMutexW(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
+		int error_code = ::GetLastError();
+		if (error_code == ERROR_ALREADY_EXISTS) {
 			printf("Instance of program is already running!");
-			exit(1);
+			throw std::runtime_error("Instance of program is already running!");
 		}
+		checkError(error_code, "CreateMutexA");
 	}
 
 	std::string getErrString() {
@@ -46,18 +48,14 @@ namespace utils {
 	}
 
 	void addToAutoruns(void) {
-		char exe_path[MAX_PATH] = { 0 };
+		wchar_t exe_path[MAX_PATH] = { 0 };
 
-		checkError(GetModuleFileNameA(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
-		cout << "Current exe path: " << exe_path << endl;
-
-		wchar_t wtext[MAX_PATH];
-		mbstowcs(wtext, exe_path, strlen(exe_path) + 1);//Plus null
-		LPWSTR ptr = wtext;
+		checkError(GetModuleFileNameW(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
+		wcout << "Current exe path: " << exe_path << endl;
 
 		HKEY hkey = NULL;
-		checkError(RegCreateKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
-		checkError(RegSetValueEx(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)wtext, strlen(exe_path)*2+1), "RegSetValueEx");
+		checkError(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
+		checkError(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path)*2+1), "RegSetValueEx");
 
 		checkError(RegCloseKey(hkey), "RegCloseKey");
 	}

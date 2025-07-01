@@ -6,7 +6,7 @@
 
 
 namespace utils {
-	const LPCSTR SINGLE_INSTANCE_MUTEX_NAME = "app_single_instance_mutex";
+	const LPCWSTR SINGLE_INSTANCE_MUTEX_NAME = L"app_single_instance_mutex";
 	const int NONZERO = 1;
 
 	void verifySingleProgramInstance();
