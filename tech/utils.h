@@ -5,9 +5,8 @@
 #include <string>
 
 namespace utils {
-	const int NONZERO = 1;
 
-	std::string getErrString();
+std::string getErrString();
 
 	int checkError(int success, std::string what_failed);
 	LSTATUS checkStatus(LSTATUS status, std::string what_failed);
