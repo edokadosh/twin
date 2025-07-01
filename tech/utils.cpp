@@ -7,34 +7,46 @@ using std::wcout;
 HANDLE singleInstanceMutex;
 
 namespace utils {
-// check GetLastError and if error accured throw runtime_error
-int checkError(int success, std::string what_failed) {
-    int error_code = ::GetLastError();
-    if (error_code != ERROR_SUCCESS) {
-        cout << what_failed << " - failed with error: " << error_code << endl;
-        cout << "Returned value: " << success << endl;
-        cout << "Error string:" << getErrString() << endl;
-        throw std::runtime_error(what_failed);
-    }
-    return success;
-}
 
-LSTATUS checkStatus(LSTATUS status, std::string what_failed) {
-    if (status != ERROR_SUCCESS) {
-        cout << what_failed << " - failed with error: " << GetLastError() << endl;
-        cout << "Error string:" << getErrString() << endl;
-        throw std::runtime_error(what_failed);
-    }
-    return status;
-}
+	WinAPIErrorException::WinAPIErrorException(const string msg) : message(msg) {
+	// Left blank intentionally
+	}
+	const char* WinAPIErrorException::what() const noexcept {
+		return message.c_str();
+	}
+	RegistryErrorException::RegistryErrorException(const string msg) : message(msg) {
+	// Left blank intentionally
+	}
+	const char* RegistryErrorException::what() const noexcept {
+		return message.c_str();
+	}
 
-// get the error string of last error
-std::string getErrString()
-{
-    DWORD errorMessageID = ::GetLastError();
-    if (errorMessageID == 0) {
-        return std::string();
-    }
+
+	int checkError(int success, std::string what_failed) {
+		int error_code = ::GetLastError();
+		if (error_code != ERROR_SUCCESS) {
+			cout << what_failed << " - failed with error: " << error_code << endl;
+			cout << "Returned value: " << success << endl;
+			cout << "Error string:" << getErrString() << endl;
+			throw WinAPIErrorException(what_failed);
+		}
+		return success;
+	}
+
+	LSTATUS checkStatus(LSTATUS status, std::string what_failed) {
+		if (status != ERROR_SUCCESS) {
+			cout << what_failed << " - failed with error: " << GetLastError() << endl;
+			cout << "Error string:" << getErrString() << endl;
+			throw RegistryErrorException(what_failed);
+		}
+		return status;
+	}
+
+	std::string getErrString() {
+		DWORD errorMessageID = ::GetLastError();
+		if (errorMessageID == 0) {
+			return std::string();
+		}
 
     LPSTR messageBuffer = nullptr;
 
@@ -48,13 +60,15 @@ std::string getErrString()
     return message;
 }
 
-// add current exe to autoruns using registry
-void addToAutoruns(void) {
-    wchar_t exe_path[MAX_PATH] = { 0 };
+	void addToAutoruns(void) {
+		wchar_t exe_path[MAX_PATH] = { 0 };
 
-    HKEY hkey = NULL;
-    checkStatus(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
-    checkStatus(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1), "RegSetValueEx");
+		checkError(GetModuleFileNameW(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
+		wcout << "Current exe path: " << exe_path << endl;
+
+		HKEY hkey = NULL;
+		checkStatus(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
+		checkStatus(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1), "RegSetValueEx");
 
     checkStatus(RegCloseKey(hkey), "RegCloseKey");
 }

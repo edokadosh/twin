@@ -10,6 +10,7 @@ using server::Server;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
 using utils::addToAutoruns;
 using utils::checkError;
+using single_running_instance_verifier::SingleRunningInstanceVerifier;
 
 const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
 
@@ -24,7 +25,7 @@ int main(void) {
 		Server s;
 		s.start();
 	}
-	catch (const std::runtime_error& e) {
+	catch (const std::exception& e) {
 		cerr << "Error: " << e.what() << endl;
 		return 1;
 	}
