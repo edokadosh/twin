@@ -7,7 +7,6 @@ using std::endl;
 
 using utils::addToAutoruns;
 using utils::checkError;
-using utils::NONZERO;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
 
 const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
@@ -23,7 +22,7 @@ int main(void) {
 
 		Sleep(HOUR_MILLISEC);
 	}
-	catch (const std::runtime_error& e) {
+	catch (const std::exception& e) {
 		cerr << "Error: " << e.what() << endl;
 		return 1;
 	}
