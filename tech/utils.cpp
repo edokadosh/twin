@@ -50,8 +50,5 @@ namespace utils {
 		checkError(RegCloseKey(hkey), "RegCloseKey");
 	}
 
-	void clean() {
-		CloseHandle(singleInstanceMutex);
-	}
 
 }

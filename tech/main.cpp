@@ -27,10 +27,6 @@ int main(void) {
 	catch (const std::runtime_error& e) {
 		cerr << "Error: " << e.what() << endl;
 	}
-	catch (...) {
-	// Left blank intentionally
-	}
-	clean();
 
 	return 0;
 }
