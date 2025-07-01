@@ -4,7 +4,7 @@ SERVER_ADDR = ('localhost', 12345)
 
 def main():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client_socket.connect(SERVER_ADDR)
+    client_socket.connect(SERVER_ADDR)
     
     while True:
         message = input("Enter message to send (or 'exit' to quit): ")
@@ -18,3 +18,5 @@ def main():
 
 if __name__ == "__main__":
 	main()
+     
+     
