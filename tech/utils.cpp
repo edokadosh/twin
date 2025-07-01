@@ -5,7 +5,6 @@ using std::endl;
 using std::wcout;
 
 HANDLE singleInstanceMutex;
-std::mutex globalMutex;
 
 namespace utils {
 	int checkError(int success, std::string what_failed) {
