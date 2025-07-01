@@ -35,7 +35,7 @@ namespace server {
 		~Server();
 
 
-		void listen();
+		void listenForClients();
 		SOCKET acceptClient();
 		void handleClietn(SOCKET clientSocket);
 

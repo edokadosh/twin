@@ -16,7 +16,7 @@ namespace server {
 		}
 	}
 
-	void Server::listen() {
+	void Server::listenForClients() {
 		WSADATA wsaData;
 		int iResult;
 
@@ -56,10 +56,17 @@ namespace server {
 		if (iResult == SOCKET_ERROR) {
 			printf("bind failed with error: %d\n", WSAGetLastError());
 			freeaddrinfo(result);
-			throw std::runtime_error("socket failed");
+			throw std::runtime_error("bind failed");
 		}
 
 		freeaddrinfo(result);
+
+		iResult = listen(m_listenSocket, SOMAXCONN);
+		if (iResult == SOCKET_ERROR) {
+			printf("listen failed with error: %d\n", WSAGetLastError());
+
+			throw std::runtime_error("listen failed");
+		}
 	}
 
 	SOCKET Server::acceptClient() {
@@ -121,7 +128,7 @@ namespace server {
 	}
 
 	void Server::start() {
-		listen();
+		listenForClients();
 		SOCKET clientSocket = acceptClient();
 
 		handleClietn(clientSocket);

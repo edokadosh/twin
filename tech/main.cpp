@@ -17,7 +17,7 @@ int main(void) {
 	try {
 		SingleRunningInstanceVerifier verify;
 
-        addToAutoruns();
+        //addToAutoruns();
 
         checkError(MessageBox(NULL, TEXT("MANAGEMENT PROGRAM IS UP"), TEXT("MANAGEMENT PROGRAM"), MB_OK), "MessageBox");
 
