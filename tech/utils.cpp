@@ -18,15 +18,6 @@ namespace utils {
 		return success;
 	}
 
-	void verifySingleProgramInstance() {
-		singleInstanceMutex = CreateMutexW(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
-		int error_code = ::GetLastError();
-		if (error_code == ERROR_ALREADY_EXISTS) {
-			printf("Instance of program is already running!");
-			throw std::runtime_error("Instance of program is already running!");
-		}
-		checkError(error_code, "CreateMutexA");
-	}
 
 	std::string getErrString() {
 		DWORD errorMessageID = ::GetLastError();
