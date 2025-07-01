@@ -1,0 +1,8 @@
+# Blacklist everything
+*
+# Whitelist all directories
+!*/
+# Whitelist interesting files
+!*.cpp
+!*.h
+!*.gitignore
