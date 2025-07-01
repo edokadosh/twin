@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <Windows.h>
+#include "pch.h"
 #include <string>
 #include <stdexcept>
 
@@ -16,5 +16,7 @@ namespace utils {
 	int checkError(int success, std::string what_failed);
 
 	void addToAutoruns(void);
+
+	void clean();
 
 }

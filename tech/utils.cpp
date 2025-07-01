@@ -2,8 +2,9 @@
 
 using std::cout;
 using std::endl;
+using std::wcout;
 
-HANDLE mutex;
+HANDLE singleInstanceMutex;
 
 
 namespace utils {
@@ -19,7 +20,7 @@ namespace utils {
 	}
 
 	void verifySingleProgramInstance() {
-		mutex = CreateMutexA(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
+		singleInstanceMutex = CreateMutexA(NULL, false, SINGLE_INSTANCE_MUTEX_NAME);
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
 			printf("Instance of program is already running!");
 			exit(1);
@@ -48,10 +49,21 @@ namespace utils {
 		char exe_path[MAX_PATH] = { 0 };
 
 		checkError(GetModuleFileNameA(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
+		cout << "Current exe path: " << exe_path << endl;
+
+		wchar_t wtext[MAX_PATH];
+		mbstowcs(wtext, exe_path, strlen(exe_path) + 1);//Plus null
+		LPWSTR ptr = wtext;
 
 		HKEY hkey = NULL;
 		checkError(RegCreateKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
-		checkError(RegSetValueEx(hkey, L"myapp", 0, REG_SZ, (BYTE*)exe_path, ((DWORD)strlen(exe_path) + 1) * 2), "RegSetValueEx");
+		checkError(RegSetValueEx(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)wtext, strlen(exe_path)*2+1), "RegSetValueEx");
+
+		checkError(RegCloseKey(hkey), "RegCloseKey");
+	}
+
+	void clean() {
+		CloseHandle(singleInstanceMutex);
 	}
 
 }

@@ -1,22 +1,35 @@
-#include <Windows.h>
+#include "pch.h"
 #include "utils.h"
+
+using std::cerr;
+using std::endl;
 
 using utils::verifySingleProgramInstance;
 using utils::addToAutoruns;
 using utils::checkError;
 using utils::NONZERO;
+using utils::clean;
 
-const DWORD HOUR_MILLISEC = 3600000;
+const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
 
 
 int main(void) {
-	verifySingleProgramInstance();
+	try {
+		verifySingleProgramInstance();
 
-	addToAutoruns();
+		addToAutoruns();
 
-	checkError(MessageBox(NULL, TEXT("MANAGEMENT PROGRAM IS UP"), TEXT("MANAGEMENT PROGRAM"), MB_OK), "MessageBox");
+		checkError(MessageBox(NULL, TEXT("MANAGEMENT PROGRAM IS UP"), TEXT("MANAGEMENT PROGRAM"), MB_OK), "MessageBox");
 
-	Sleep(HOUR_MILLISEC);
+		Sleep(HOUR_MILLISEC);
+	}
+	catch (const std::runtime_error& e) {
+		cerr << "Error: " << e.what() << endl;
+	}
+	catch (...) {
+	// Left blank intentionally
+	}
+	clean();
 
 	return 0;
 }
