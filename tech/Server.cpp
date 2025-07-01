@@ -2,7 +2,11 @@
 
 namespace server {
 
-Server::Server() { return; }
+Server::Server() {
+    commandToHandler = {
+        { string("PING"), Server::handlePing }
+    };
+}
 
 Server::~Server()
 {

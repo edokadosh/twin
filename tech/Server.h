@@ -26,9 +26,10 @@ class Server {
 
   void removeClient(SOCKET clientSocket);
 
-  void handlePing(SOCKET clientSocket);
+  static void handlePing(SOCKET clientSocket);
 
-  static const map<string, void (*)(SOCKET)> commandToHandler;
+  map<string, void (*)(SOCKET)> commandToHandler;
+
  public:
   Server();
   ~Server();
@@ -41,8 +42,5 @@ class Server {
   void start();
 };
 
-const map<string, void (*)(SOCKET)> Server::commandToHandler = {
-    { 'PING', handlePing }
-};
 
 }  // namespace server

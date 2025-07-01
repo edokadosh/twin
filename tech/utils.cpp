@@ -29,20 +29,23 @@ LSTATUS checkStatus(LSTATUS status, std::string what_failed) {
 }
 
 // get the error string of last error
-std::string getErrString() {
+std::string getErrString()
+{
     DWORD errorMessageID = ::GetLastError();
     if (errorMessageID == 0) {
         return std::string();
     }
 
-size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-    NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    LPSTR messageBuffer = nullptr;
 
-std::string message(messageBuffer, size);
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
-LocalFree(messageBuffer);
+    std::string message(messageBuffer, size);
 
-return message;
+    LocalFree(messageBuffer);
+
+    return message;
 }
 
 // add current exe to autoruns using registry
