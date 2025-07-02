@@ -2,31 +2,21 @@
 #include "pch.h"
 #include <stdexcept>
 #include <string>
+#include "exceptions.h"
 
-using std::string;
+using std::wstring;
 using std::runtime_error;
+
+using exceptions::InstanceExistsException;
 
 namespace single_running_instance_verifier {
 
-	/**
-	 * @brief Exception class for when an instance of the program already exists
-	 */
-	class InstanceExistsException : public runtime_error {
-	public:
-		InstanceExistsException(const string& msg) : runtime_error(msg) {}
-	};
-
-
-	const LPCWSTR SINGLE_INSTANCE_MUTEX_NAME = L"app_single_instance_mutex";
-
+	const wstring SINGLE_INSTANCE_MUTEX_NAME = L"app_single_instance_mutex";
 
 	/**
 	 * @brief Class to verify that only a single instance of the application is running
 	 */
 	class SingleRunningInstanceVerifier {
-	private:
-		HANDLE m_singleInstanceMutex;
-
 	public:
 		/**
 		 * @brief Constructor for SingleRunningInstanceVerifier
@@ -36,12 +26,15 @@ namespace single_running_instance_verifier {
 		SingleRunningInstanceVerifier();
 
 		virtual ~SingleRunningInstanceVerifier();
-		SingleRunningInstanceVerifier(const SingleRunningInstanceVerifier& other);
-		SingleRunningInstanceVerifier(SingleRunningInstanceVerifier&& other) noexcept;
+		SingleRunningInstanceVerifier(const SingleRunningInstanceVerifier& other) = delete;
+		SingleRunningInstanceVerifier(SingleRunningInstanceVerifier&& other) noexcept = delete;
 		SingleRunningInstanceVerifier& operator=(
-			const SingleRunningInstanceVerifier& other);
+			const SingleRunningInstanceVerifier& other) = delete;
 		SingleRunningInstanceVerifier& operator=(
-			SingleRunningInstanceVerifier&& other) noexcept;
+			SingleRunningInstanceVerifier&& other) noexcept = delete;
+
+	private:
+		HANDLE m_singleInstanceMutex;
 	};
 
 }  // namespace single_running_instance_verifier

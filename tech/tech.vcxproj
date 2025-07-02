@@ -127,14 +127,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="exceptions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="RegKeyRAII.cpp" />
     <ClCompile Include="SingleRunningInstanceVerifier.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="exceptions.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RegKeyRAII.h" />
     <ClInclude Include="SingleRunningInstanceVerifier.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

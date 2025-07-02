@@ -1,12 +1,15 @@
 #include "pch.h"
+#include <iostream>
+
 #include "utils.h"
 #include "SingleRunningInstanceVerifier.h"
+#include "exceptions.h"
 
 using std::cerr;
 using std::endl;
 
 using utils::addToAutoruns;
-using utils::checkError;
+using exceptions::checkError;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
 
 const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
