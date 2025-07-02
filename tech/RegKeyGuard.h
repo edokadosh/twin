@@ -33,7 +33,6 @@ namespace regkey_guard {
         HKEY m_hKey;
     };
 
-
-}
+} // namespace regkey_guard
 
 
