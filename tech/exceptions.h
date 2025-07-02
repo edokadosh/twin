@@ -3,6 +3,7 @@
 #include "pch.h"
 #include <string>
 #include <stdexcept>
+#include <winsock2.h>
 
 using std::string;
 using std::runtime_error;
@@ -30,6 +31,14 @@ namespace exceptions {
 	class InstanceExistsException : public runtime_error {
 	public:
 		InstanceExistsException(const string& msg) : runtime_error(msg) {}
+	};
+
+	/**
+	 * @brief Exception class for WinSock errors
+	 */
+	class WinSockErrorException : public runtime_error {
+	public:
+		WinSockErrorException(const string msg) : runtime_error(msg) {}
 	};
 
 	/**
@@ -63,5 +72,14 @@ namespace exceptions {
 	 * @throws RegistryErrorException if the operation failed
 	 */
 	LSTATUS checkStatus(LSTATUS status, string what_failed);
+
+	/**
+	 * @brief Check if a WinSock function call was successful
+	 * @param errorCode The return value of the WinSock function
+	 * @param what_failed A string description of the operation that failed
+	 * @return The error code if the call failed
+	 * @throws WinSockErrorException if the call failed
+	 */
+	int checkWinSockError(int errorCode, const string& what_failed);
 
 } // namespace exceptions
