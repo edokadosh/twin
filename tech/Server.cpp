@@ -1,9 +1,31 @@
 #include "Server.h"
-#include "utils.h"
+#include "exceptions.h"
+#include "AddrInfoRAII.h"
 
 using exceptions::printError;
+using exceptions::WinSockErrorException;
+using exceptions::checkWinSockError;
+using exceptions::checkError;
+
+using addrinfo_raii::AddrInfoRAII;
+
 
 namespace server {
+
+	vector<string> split(const string& str, char delimiter) {
+		vector<string> tokens;
+		size_t start = 0;
+		size_t end = str.find(delimiter);
+
+		while (end != string::npos) {
+			tokens.push_back(str.substr(start, end - start));
+			start = end + 1;
+			end = str.find(delimiter, start);
+		}
+		tokens.push_back(str.substr(start));
+
+		return tokens;
+	}
 	
 
 	Server::Server() {
@@ -17,7 +39,8 @@ namespace server {
 		}
 
 		commandToHandler = {
-			{ string("PING"), &Server::handlePing }
+			{ "PING", &Server::handlePing },
+			{ "RUN", &Server::handleRun }
 		};
 	}
 
@@ -39,7 +62,7 @@ namespace server {
 		m_listenSocket = SocketRAII(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
 
 		// Setup the TCP listening socket
-		checkWinSockError(bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen));
+		checkWinSockError(bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen), "bind");
 
 		checkWinSockError(listen(m_listenSocket.get(), SOMAXCONN), "listen");
 
@@ -52,13 +75,19 @@ namespace server {
 
 
 	void Server::handleCommand(SocketRAII& clientSocket, const string& commandString) {
-		if (commandToHandler.find(commandString) == commandToHandler.end()) {
+		vector<string> tokens = split(commandString);
+		if (tokens.empty()) {
+			unknownCommand(clientSocket);
+			return;
+		}
+		string command = tokens[0];
+
+		if (commandToHandler.find(command) == commandToHandler.end()) {
 			unknownCommand(clientSocket);
 		}
 		else {
-			CommandHandler handler = commandToHandler[commandString];
-			(this->*handler)(clientSocket);
-			
+			CommandHandler handler = commandToHandler[command];
+			(this->*handler)(clientSocket, tokens);
 		}
 	}
 
@@ -67,9 +96,17 @@ namespace server {
 		clientSocket.send(unknown_response);
 	}
 
-	void Server::handlePing(SocketRAII& clientSocket) {
+	void Server::handlePing(SocketRAII& clientSocket, vector<string> args) {
 		string ping_response = "PONG";
 		int sent = clientSocket.send(ping_response);
+	}
+
+	void Server::handleRun(SocketRAII& clientSocket, vector<string> args) {
+		string executePath = args[1];
+
+		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), NULL, NULL, SW_NORMAL)), "ShellExecuteA");
+		
+		int sent = clientSocket.send("DONE");
 	}
 
 	void Server::handleClient(SocketRAII& clientSocket) {

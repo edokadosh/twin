@@ -7,9 +7,9 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include "AddrInfoRAII.h"
+#include <vector>
+
 #include "SocketRAII.h"
-#include "exceptions.h"
 
 using std::string;
 using std::vector;
@@ -18,13 +18,19 @@ using std::cout;
 using std::endl;
 using std::runtime_error;
 
-using addrinfo_raii::AddrInfoRAII;
 using socket_raii::SocketRAII;
-using exceptions::WinSockErrorException;
 
 namespace server {
 
 	const PCSTR DEFAULT_PORT = "12345";
+
+	/**
+	 * @brief Splits a string into tokens based on a delimiter
+	 * @param str The string to split
+	 * @param delimiter The character used to split the string
+	 * @return A result vector of tokens
+	 */
+	vector<string> split(const string& str, char delimiter = ' ');
 
 	class Server {
 	public:
@@ -47,11 +53,11 @@ namespace server {
 		void handleCommand(SocketRAII& clientSocket, const string& commandString);
 		void unknownCommand(SocketRAII& clientSocket);
 
-		void handlePing(SocketRAII& clientSocket);
+		void handlePing(SocketRAII& clientSocket, vector<string> args);
+		void handleRun(SocketRAII& clientSocket, vector<string> args);
 
-		using CommandHandler = void (Server::*)(SocketRAII&);
+		using CommandHandler = void (Server::*)(SocketRAII&, vector<string> args);
 		map<string, CommandHandler> commandToHandler;
-
 	};
 
 }  // namespace server
