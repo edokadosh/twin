@@ -7,9 +7,8 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include "AddrInfoRAII.h"
+#include <vector>
 #include "SocketRAII.h"
-#include "exceptions.h"
 
 using std::string;
 using std::vector;
@@ -18,7 +17,6 @@ using std::cout;
 using std::endl;
 using std::runtime_error;
 
-using addrinfo_raii::AddrInfoRAII;
 using socket_raii::SocketRAII;
 using exceptions::WinSockErrorException;
 

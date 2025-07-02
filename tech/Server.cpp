@@ -1,7 +1,15 @@
 #include "Server.h"
 #include "utils.h"
+#include "exceptions.h"
+#include "AddrInfoRAII.h"
 
 using exceptions::printError;
+using exceptions::WinSockErrorException;
+using exceptions::checkWinSockError;
+using exceptions::checkError;
+
+using addrinfo_raii::AddrInfoRAII;
+
 
 namespace server {
 	
