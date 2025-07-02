@@ -4,29 +4,35 @@
 #include <string>
 
 using std::string;
+using std::runtime_error;
 
 namespace single_running_instance_verifier {
 
-	// Exception class for when an instacne already exists
-	class InstanceExistsException : public std::exception {
-	private:
-		string message;
+	/**
+	 * @brief Exception class for when an instance of the program already exists
+	 */
+	class InstanceExistsException : public runtime_error {
 	public:
-		InstanceExistsException(const string msg);
-		const char* what() const noexcept;
+		InstanceExistsException(const string& msg) : runtime_error(msg) {}
 	};
 
 
 	const LPCWSTR SINGLE_INSTANCE_MUTEX_NAME = L"app_single_instance_mutex";
 
-	// class for verifiying that only one process is running this program.
-	// only one process can create an instance of this class at a time.
+
+	/**
+	 * @brief Class to verify that only a single instance of the application is running
+	 */
 	class SingleRunningInstanceVerifier {
 	private:
 		HANDLE m_singleInstanceMutex;
 
 	public:
-		// if there is a process with a member of this class this will throw 
+		/**
+		 * @brief Constructor for SingleRunningInstanceVerifier
+		 * @throws InstanceExistsException if another instance of the application is already running
+		 * @throws WinAPIErrorException if there is an error creating the mutex
+		 */
 		SingleRunningInstanceVerifier();
 
 		virtual ~SingleRunningInstanceVerifier();

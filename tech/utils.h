@@ -5,35 +5,63 @@
 #include <string>
 
 using std::string;
+using std::exception;
+using std::runtime_error;
 
 namespace utils {
-	// Exception class for winapi errors
-	class WinAPIErrorException : public std::exception {
-	private:
-		string message;
+
+	/**
+	 * @brief Exception class for WinAPI errors
+	 */
+	class WinAPIErrorException : public runtime_error {
 	public:
-		WinAPIErrorException(const string msg);
-		const char* what() const noexcept;
+		WinAPIErrorException(const string& msg) : runtime_error(msg) {}
 	};
 
-	// Exception class for registry errors
-	class RegistryErrorException : public std::exception {
-	private:
-		string message;
+	/**
+	 * @brief Exception class for registry errors
+	 */
+	class RegistryErrorException : public runtime_error {
 	public:
-		RegistryErrorException(const string msg);
-		const char* what() const noexcept;
+		RegistryErrorException(const string& msg) : runtime_error(msg) {}
 	};
 
-	// get the error string of last error
-	std::string getErrString();
+	
+	/**
+	 * @brief get error string from error code
+	 * @param errorCode The error code to retrieve the string for
+	 * @return A string containing the error message corresponding to the error code
+	 */
+	std::string getErrString(int errorCode);
 
-	// check GetLastError and if error accured throw runtime_error
-	int checkError(int success, std::string what_failed);
+	/**
+	 * @brief Print error message to console
+	 * @param errorCode The error code to print
+	 * @param what_failed A string description of the operation that failed
+	 */
+	void printError(int errorCode, string what_failed);
 
-	// check status and if error accured throw runtime_error
-	LSTATUS checkStatus(LSTATUS status, std::string what_failed);
+	/**
+	 * @brief Check if a WinAPI function call was successful
+	 * @param success The return value of the WinAPI function
+	 * @param what_failed A string description of the operation that failed
+	 * @return The success value if the call was successful
+	 * @throws WinAPIErrorException if the call failed
+	 */
+	int checkError(int success, string what_failed);
 
-	// add current exe to autoruns using registry
+	/**
+	 * @brief Check if a registry operation was successful
+	 * @param status The return value of the registry operation
+	 * @param what_failed A string description of the operation that failed
+	 * @return The status value if the operation was successful
+	 * @throws RegistryErrorException if the operation failed
+	 */
+	LSTATUS checkStatus(LSTATUS status, string what_failed);
+
+	/**
+	 * @brief Add the current executable to the Windows autorun registry key
+	 * This function retrieves the path of the current executable and adds it to autorun registry key
+	 */
 	void addToAutoruns(void);
 }
