@@ -1,0 +1,205 @@
+#include "Server.h"
+#include "exceptions.h"
+#include "AddrInfoGuard.h"
+#include "FileGuard.h"
+
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::to_string;
+
+using exceptions::printError;
+using exceptions::WinSockErrorException;
+using exceptions::checkWinSockError;
+using exceptions::checkError;
+
+using addrinfo_Guard::AddrInfoGuard;
+using file_guard::FileGuard;
+
+namespace server {
+
+	vector<string> split(const string& str, char delimiter) {
+		vector<string> tokens;
+		size_t start = 0;
+		size_t end = str.find(delimiter);
+
+		while (end != string::npos) {
+			tokens.push_back(str.substr(start, end - start));
+			start = end + 1;
+			end = str.find(delimiter, start);
+		}
+		tokens.push_back(str.substr(start));
+
+		return tokens;
+	}
+
+	string join(const vector<string>& tokens, char delimiter) {
+		string result;
+		for (auto it : tokens) {
+			if (!result.empty()) {
+				result += delimiter;
+			}
+			result += it;
+		}
+		return result;
+	}
+
+	int safeStoi(string str) {
+		try {
+			return stoi(str);
+		}
+		catch (...) {
+			return NOT_A_NUMBER;
+		}
+	}
+
+	Server::Server() {
+		WSADATA wsaData;
+
+		// Initialize Winsock
+		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (result != 0) {
+			cout << "WSAStartup failed with error: " << result << endl;
+			throw WinSockErrorException("WSAStartup failed");
+		}
+
+		commandToHandler = {
+			{ "PING", &Server::handlePing },
+			{ "RUN", &Server::handleRun },
+			{ "UPLOAD", &Server::handleUpload },
+			{ "DOWNLOAD", &Server::handleDownload }
+		};
+	}
+
+	Server::~Server() {
+		WSACleanup();
+	}
+
+	void Server::listenForClients() {
+		struct addrinfo hints;
+
+		ZeroMemory(&hints, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+		hints.ai_flags = AI_PASSIVE;
+
+		AddrInfoGuard addrInfo(NULL, DEFAULT_PORT, &hints);
+
+		m_listenSocket = SocketGuard(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
+
+		// Setup the TCP listening socket
+		checkWinSockError(bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen), "bind");
+
+		checkWinSockError(listen(m_listenSocket.get(), SOMAXCONN), "listen");
+
+		cout << "Listening for connections on port: " << DEFAULT_PORT << endl;
+	}
+
+	SocketGuard Server::acceptClient() {
+		return SocketGuard(accept(m_listenSocket.get(), NULL, NULL));
+	}
+
+
+	void Server::handleCommand(SocketGuard& clientSocket, const string& commandString) {
+		vector<string> tokens = split(commandString, ' ');
+		if (tokens.empty()) {
+			unknownCommand(clientSocket);
+			return;
+		}
+		string command = tokens[0];
+
+		if (commandToHandler.find(command) == commandToHandler.end()) {
+			unknownCommand(clientSocket);
+		}
+		else {
+			CommandHandler handler = commandToHandler[command];
+			(this->*handler)(clientSocket, tokens);
+		}
+	}
+
+	void Server::unknownCommand(SocketGuard& clientSocket) {
+		string unknown_response = "UNKNOWN COMMAND";
+		clientSocket.send(unknown_response);
+	}
+
+	void Server::handlePing(SocketGuard& clientSocket, vector<string> args) {
+		string ping_response = MESSAGE_PING_RESPONSE;
+		int sent = clientSocket.send(ping_response);
+	}
+
+	void Server::handleRun(SocketGuard& clientSocket, vector<string> args) {
+		string executePath = args[1];
+		string params = join(vector<string>(args.begin() + 2, args.end()), ' ');
+		std::cout << "Executing: " << executePath << " with params: " << params << std::endl;
+
+		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), params.c_str(), NULL, SW_NORMAL)), "ShellExecuteA");
+
+		int sent = clientSocket.send(MESSAGE_DONE);
+	}
+
+	void Server::handleUpload(SocketGuard& clientSocket, vector<string> args) {
+		string fileName = args[1];
+		int fileSize = 0;
+
+		if ((fileSize = safeStoi(args[2])) == NOT_A_NUMBER) {
+			cerr << "Invalid file size provided: " << args[2] << endl;
+			clientSocket.send("ERROR: Invalid file size");
+			return;
+		}
+
+		clientSocket.send(MESSAGE_READY);
+		vector<char> fileBytes = clientSocket.recvBytes(fileSize);
+		if (fileBytes.size() != fileSize) {
+			cerr << "Received unexpected file size: " << fileBytes.size() << ", expected: " << fileSize << endl;
+			clientSocket.send("ERROR: File size mismatch");
+			return;
+		}
+
+		cout << "Received file: " << fileName << " with size: " << fileBytes.size() << " bytes." << endl;
+
+		FileGuard file(fileName, GENERIC_WRITE);
+		file.write(fileBytes);
+		clientSocket.send(MESSAGE_DONE);
+	}
+
+	void Server::handleDownload(SocketGuard& clientSocket, vector<string> args) {
+		string fileName = args[1];
+		FileGuard file(fileName, GENERIC_READ);
+		vector<char> fileBytes = file.read();
+
+		clientSocket.send(MESSAGE_FILE + ' ' + to_string(fileBytes.size()));
+		string response = clientSocket.recvString();
+		if (response != MESSAGE_READY) {
+			cout << "Got unexpected message from client" << endl;
+			clientSocket.send("Expected client response 'READY'");
+			return;
+		}
+		clientSocket.sendBytes(fileBytes);
+		cout << "Sent file: " << fileName << " with size: " << fileBytes.size() << " bytes." << endl;
+		clientSocket.send(MESSAGE_DONE);
+	}
+
+	void Server::handleClient(SocketGuard& clientSocket) {
+		string clientMessage = "";
+
+		do {
+			clientMessage = clientSocket.recvString();
+
+			if (clientMessage == "") {
+				cout << "Connection closing..." << endl;
+				continue;
+			}
+
+			handleCommand(clientSocket, clientMessage);
+		} while (clientMessage != "");
+	}
+
+	void Server::start() {
+		listenForClients();
+		SocketGuard clientSocket = acceptClient();
+
+		handleClient(clientSocket);
+	}
+
+} // namespace server
