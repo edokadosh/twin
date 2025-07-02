@@ -1,14 +1,15 @@
 #include "utils.h"
 #include <iostream>
 
+#include "exceptions.h"
+#include "RegKeyRAII.h"
+
 using std::cout;
 using std::endl;
 using std::wcout;
 
-
-HANDLE singleInstanceMutex;
 using exceptions::checkError;
-using exceptions::checkStatus;
+using regkey_raii::RegKeyRAII;
 
 namespace utils {
 
@@ -18,11 +19,11 @@ namespace utils {
 		checkError(GetModuleFileNameW(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
 		wcout << "Current exe path: " << exe_path << endl;
 
+		RegKeyRAII regKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run");
 		HKEY hkey = NULL;
-		checkStatus(RegCreateKeyW(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey), "RegCreateKey");
-		checkStatus(RegSetValueExW(hkey, L"management program autorun", 0, REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1), "RegSetValueEx");
 
-		checkStatus(RegCloseKey(hkey), "RegCloseKey");
+		regKey.setValue(L"management program autorun", REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1);
+
 	}
 
 } // namespace utils
