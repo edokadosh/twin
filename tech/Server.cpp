@@ -3,6 +3,11 @@
 #include "AddrInfoGuard.h"
 #include "FileGuard.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::to_string;
+
 using exceptions::printError;
 using exceptions::WinSockErrorException;
 using exceptions::checkWinSockError;
@@ -39,6 +44,14 @@ namespace server {
 		return result;
 	}
 
+	int safeStoi(string str) {
+		try {
+			return stoi(str);
+		}
+		catch (...) {
+			return NOT_A_NUMBER;
+		}
+	}
 
 	Server::Server() {
 		WSADATA wsaData;
@@ -53,7 +66,8 @@ namespace server {
 		commandToHandler = {
 			{ "PING", &Server::handlePing },
 			{ "RUN", &Server::handleRun },
-			{ "UPLOAD", &Server::handleUpload }
+			{ "UPLOAD", &Server::handleUpload },
+			{ "DOWNLOAD", &Server::handleDownload }
 		};
 	}
 
@@ -126,15 +140,44 @@ namespace server {
 
 	void Server::handleUpload(SocketGuard& clientSocket, vector<string> args) {
 		string fileName = args[1];
+		int fileSize = 0;
+
+		if ((fileSize = safeStoi(args[2])) == NOT_A_NUMBER) {
+			cerr << "Invalid file size provided: " << args[2] << endl;
+			clientSocket.send("ERROR: Invalid file size");
+			return;
+		}
+
 		clientSocket.send(MESSAGE_READY);
-		vector<char> fileBytes = clientSocket.recvBytes();
+		vector<char> fileBytes = clientSocket.recvBytes(fileSize);
+		if (fileBytes.size() != fileSize) {
+			cerr << "Received unexpected file size: " << fileBytes.size() << ", expected: " << fileSize << endl;
+			clientSocket.send("ERROR: File size mismatch");
+			return;
+		}
 
 		cout << "Received file: " << fileName << " with size: " << fileBytes.size() << " bytes." << endl;
 
 		FileGuard file(fileName, GENERIC_WRITE);
 		file.write(fileBytes);
 		clientSocket.send(MESSAGE_DONE);
+	}
 
+	void Server::handleDownload(SocketGuard& clientSocket, vector<string> args) {
+		string fileName = args[1];
+		FileGuard file(fileName, GENERIC_READ);
+		vector<char> fileBytes = file.read();
+
+		clientSocket.send(MESSAGE_FILE + ' ' + to_string(fileBytes.size()));
+		string response = clientSocket.recvString();
+		if (response != MESSAGE_READY) {
+			cout << "Got unexpected message from client" << endl;
+			clientSocket.send("Expected client response 'READY'");
+			return;
+		}
+		clientSocket.sendBytes(fileBytes);
+		cout << "Sent file: " << fileName << " with size: " << fileBytes.size() << " bytes." << endl;
+		clientSocket.send(MESSAGE_DONE);
 	}
 
 	void Server::handleClient(SocketGuard& clientSocket) {

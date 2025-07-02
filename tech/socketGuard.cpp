@@ -73,20 +73,31 @@ namespace socket_Guard {
         return string(); 
     }
 
-    vector<char> SocketGuard::recvBytes(int flags) const {
+    vector<char> SocketGuard::recvBytes(int len, int flags) const {
         vector<char> result;
         vector<char> buffer(DEFAULT_BUFLEN);
         int bytesRead = 0;
+        int totalRead = 0;
 
         do {
             bytesRead = recv(buffer.data(), DEFAULT_BUFLEN, flags);
             if (bytesRead > 0) {
                 result.insert(result.end(), buffer.begin(), buffer.begin() + bytesRead);
             }
-        } while (bytesRead > 0);
+            totalRead += bytesRead;
+        } while ((bytesRead > 0) && (totalRead < len));
 
         result.shrink_to_fit();
         return result;
+    }
+
+    void SocketGuard::sendBytes(vector<char> bytes) {
+        int totalSent = 0;
+        int bytesToSend = static_cast<int>(bytes.size());
+
+        while (totalSent < bytesToSend) {
+            totalSent += send(bytes.data() + totalSent, bytesToSend - totalSent, 0);
+        }
     }
 
 

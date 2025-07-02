@@ -42,7 +42,8 @@ namespace socket_Guard {
         int recv(char* buf, int len, int flags) const;
         int send(const string& str, int flags = 0);
         string recvString(int flags = 0) const;
-        vector<char> recvBytes(int flags = 0) const;
+        vector<char> recvBytes(int len, int flags = 0) const;
+        void sendBytes(vector<char> bytes);
 
     private:
         SOCKET m_socket;

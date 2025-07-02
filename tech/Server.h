@@ -14,8 +14,6 @@
 using std::string;
 using std::vector;
 using std::map;
-using std::cout;
-using std::endl;
 using std::runtime_error;
 
 using socket_Guard::SocketGuard;
@@ -26,6 +24,7 @@ namespace server {
 	const string MESSAGE_PING_RESPONSE = "PONG";
 	const string MESSAGE_DONE = "DONE";
 	const string MESSAGE_READY = "READY";
+	const string MESSAGE_FILE = "FILE";
 
 	/**
 	 * @brief Splits a string into tokens based on a delimiter
@@ -42,6 +41,15 @@ namespace server {
 	 * @return A single string containing all tokens joined by the delimiter
 	 */
 	string join(const vector<string>& tokens, char delimiter = ' ');
+
+	/**
+	 * @brief Converts a string to an integer safely
+	 * @param str The string to convert
+	 * @return The integer value of the string if valid, otherwise returns NOT_A_NUMBER.
+	 */
+	int safeStoi(string str);
+
+	const int NOT_A_NUMBER = -1;
 
 	class Server {
 	public:
@@ -67,6 +75,7 @@ namespace server {
 		void handlePing(SocketGuard& clientSocket, vector<string> args);
 		void handleRun(SocketGuard& clientSocket, vector<string> args);
 		void handleUpload(SocketGuard& clientSocket, vector<string> args);
+		void handleDownload(SocketGuard& clientSocket, vector<string> args);
 
 		using CommandHandler = void (Server::*)(SocketGuard&, vector<string> args);
 		map<string, CommandHandler> commandToHandler;
