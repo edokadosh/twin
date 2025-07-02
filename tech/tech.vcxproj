@@ -131,17 +131,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AddrInfoRAII.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="SingleRunningInstanceVerifier.cpp" />
     <ClCompile Include="Server.cpp" />
+    <ClCompile Include="socketRAII.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddrInfoRAII.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SingleRunningInstanceVerifier.h" />
     <ClInclude Include="Server.h" />
+    <ClInclude Include="socketRAII.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

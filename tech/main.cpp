@@ -1,10 +1,14 @@
+#include <stdexcept>
+
 #include "Server.h"
 #include "SingleRunningInstanceVerifier.h"
 #include "pch.h"
 #include "utils.h"
 
+
 using std::cerr;
 using std::endl;
+using std::runtime_error;
 
 using server::Server;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
@@ -25,7 +29,7 @@ int main(void) {
 		Server s;
 		s.start();
 	}
-	catch (const std::exception& e) {
+	catch (const runtime_error& e) {
 		cerr << "Error: " << e.what() << endl;
 		return 1;
 	}

@@ -7,46 +7,56 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include "AddrInfoRAII.h"
+#include "SocketRAII.h"
 
 using std::string;
 using std::vector;
 using std::map;
 using std::cout;
 using std::endl;
+using std::runtime_error;
+
+using addrinfo_raii::AddrInfoRAII;
+using socket_raii::SocketRAII;
 
 namespace server {
 
-	// Exception class forserver errors
-	class WinSockErrorException : public std::exception {
-	private:
-		string message;
+	/**
+	 * @brief Exception class for WinSock errors
+	 */
+	class WinSockErrorException : public runtime_error {
 	public:
-		WinSockErrorException(const string msg);
-		const char* what() const noexcept;
+		WinSockErrorException(const string msg) : runtime_error(msg) {}
 	};
 
-	const size_t DEFAULT_BUFLEN = 512;
+	int checkWinSockError(int errorCode, const string& what_failed);
+
 	const PCSTR DEFAULT_PORT = "12345";
 
 	class Server {
 	private:
-		SOCKET m_listenSocket = INVALID_SOCKET;
-		vector<SOCKET> m_clientSockets;
+		SocketRAII m_listenSocket;
+		
+		void handleCommand(SocketRAII& clientSocket, const string& commandString);
+		void unknownCommand(SocketRAII& clientSocket);
+		
+		void handlePing(SocketRAII& clientSocket);
 
-		void removeClient(SOCKET clientSocket);
-
-		void handlePing(SOCKET clientSocket);
-
-		map<string, void (Server::*)(SOCKET)> commandToHandler;
+		using CommandHandler = void (Server::*)(SocketRAII&);
+		map<string, CommandHandler> commandToHandler;
 
 	public:
+		/**
+		 * @brief Initializes the WinSock library
+		 * @throws WinSockErrorException if initialization fails
+		 */
 		Server();
 		~Server();
 
-
 		void listenForClients();
-		SOCKET acceptClient();
-		void handleClietn(SOCKET clientSocket);
+		SocketRAII acceptClient();
+		void handleClient(SocketRAII& clientSocket);
 
 		void start();
 	};

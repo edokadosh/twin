@@ -1,14 +1,28 @@
 #include "Server.h"
+#include "utils.h"
+
+using utils::printError;
 
 namespace server {
-	WinSockErrorException::WinSockErrorException(const string msg) : message(msg) {
-		// Left blank intentionally
-	}
-	const char* WinSockErrorException::what() const noexcept {
-		return message.c_str();
+	
+	int checkWinSockError(int errorCode, const string& what_failed) {
+		if (errorCode == SOCKET_ERROR) {
+			printError(errorCode, what_failed);
+			throw WinSockErrorException(what_failed);
+		}
+		return errorCode;
 	}
 
 	Server::Server() {
+		WSADATA wsaData;
+
+		// Initialize Winsock
+		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (result != 0) {
+			cout << "WSAStartup failed with error: " << result << endl;
+			throw WinSockErrorException("WSAStartup failed");
+		}
+
 		commandToHandler = {
 			{ string("PING"), &Server::handlePing }
 		};
@@ -16,25 +30,12 @@ namespace server {
 
 	Server::~Server() {
 		WSACleanup();
-		closesocket(m_listenSocket);
-		for (auto s : m_clientSockets) {
-			closesocket(s);
-		}
 	}
 
 	void Server::listenForClients() {
-		WSADATA wsaData;
 		int iResult;
 
-		struct addrinfo* result = NULL;
 		struct addrinfo hints;
-
-		// Initialize Winsock
-		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (iResult != 0) {
-			printf("WSAStartup failed with error: %d\n", iResult);
-			throw WinSockErrorException("WSAStartup failed");
-		}
 
 		ZeroMemory(&hints, sizeof(hints));
 		hints.ai_family = AF_INET;
@@ -42,102 +43,67 @@ namespace server {
 		hints.ai_protocol = IPPROTO_TCP;
 		hints.ai_flags = AI_PASSIVE;
 
-		// Resolve the server address and port
-		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-		if (iResult != 0) {
-			printf("getaddrinfo failed with error: %d\n", iResult);
-			throw WinSockErrorException("getaddrinfo failed");
-		}
+		AddrInfoRAII addrInfo(NULL, DEFAULT_PORT, &hints);
 
-		// Create a SOCKET for the server to listen for client connections.
-		m_listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		if (m_listenSocket == INVALID_SOCKET) {
-			printf("socket failed with error: %ld\n", WSAGetLastError());
-			freeaddrinfo(result);
-			throw WinSockErrorException("socket failed");
-		}
+		m_listenSocket = SocketRAII(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
 
 		// Setup the TCP listening socket
-		iResult = bind(m_listenSocket, result->ai_addr, (int)result->ai_addrlen);
+		iResult = bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen);
 		if (iResult == SOCKET_ERROR) {
-			printf("bind failed with error: %d\n", WSAGetLastError());
-			freeaddrinfo(result);
+			cout << "bind failed with error: " << WSAGetLastError() << endl;
 			throw WinSockErrorException("bind failed");
 		}
+		checkWinSockError(listen(m_listenSocket.get(), SOMAXCONN), "listen");
 
-		freeaddrinfo(result);
+		cout << "Listening for connections on port: " << DEFAULT_PORT << endl;
+	}
 
-		iResult = listen(m_listenSocket, SOMAXCONN);
-		if (iResult == SOCKET_ERROR) {
-			printf("listen failed with error: %d\n", WSAGetLastError());
+	SocketRAII Server::acceptClient() {
+		return SocketRAII(accept(m_listenSocket.get(), NULL, NULL));
+	}
 
-			throw WinSockErrorException("listen failed");
+
+	void Server::handleCommand(SocketRAII& clientSocket, const string& commandString) {
+		if (commandToHandler.find(commandString) == commandToHandler.end()) {
+			unknownCommand(clientSocket);
+		}
+		else {
+			CommandHandler handler = commandToHandler[commandString];
+			(this->*handler)(clientSocket);
+			
 		}
 	}
 
-	SOCKET Server::acceptClient() {
-		SOCKET clientSocket = accept(m_listenSocket, NULL, NULL);
-		if (clientSocket == INVALID_SOCKET) {
-			printf("accept failed with error: %d\n", WSAGetLastError());
-			throw WinSockErrorException("accept failed");
-		}
-		m_clientSockets.push_back(clientSocket);
-		return clientSocket;
+	void Server::unknownCommand(SocketRAII& clientSocket) {
+		string unknown_response = "UNKNOWN COMMAND";
+		clientSocket.send(unknown_response);
 	}
 
-	void Server::removeClient(SOCKET clientSocket) {
-		m_clientSockets.erase(
-			std::remove(m_clientSockets.begin(), m_clientSockets.end(), clientSocket),
-			m_clientSockets.end());
-		closesocket(clientSocket);
+	void Server::handlePing(SocketRAII& clientSocket) {
+		string ping_response = "PONG";
+		int sent = clientSocket.send(ping_response);
 	}
 
-	void Server::handlePing(SOCKET clientSocket) {
-		char ping_response[] = "PONG";
-		int sent = send(clientSocket, ping_response, strlen(ping_response), 0);
-		if (sent == SOCKET_ERROR) {
-			printf("send failed with error: %d\n", WSAGetLastError());
-			removeClient(clientSocket);
-			throw WinSockErrorException("send failed");
-		}
-		printf("Bytes sent: %d\n", sent);
-	}
-
-	void Server::handleClietn(SOCKET clientSocket) {
-		int sent;
-		char recvbuf[DEFAULT_BUFLEN + 1];
+	void Server::handleClient(SocketRAII& clientSocket) {
+		string clientMessage = "";
 
 		do {
-			sent = recv(clientSocket, recvbuf, DEFAULT_BUFLEN, 0);
+			clientMessage = clientSocket.recv();
 
-			if (sent < 0) {
-				removeClient(clientSocket);
-				throw WinSockErrorException("recv failed");
-			}
-			else if (sent == 0) {
+			if (clientMessage == "") {
 				cout << "Connection closing..." << endl;
 				continue;
 			}
-			recvbuf[DEFAULT_BUFLEN] = '\0';
-			string commandString(recvbuf);
-
-			if (commandToHandler.find(commandString) == commandToHandler.end()) {
-				cout << "Got Unknown command" << endl;
-			}
-			else {
-				((*this).*commandToHandler[commandString])(clientSocket);
-			}
-
-		} while (sent > 0);
-
-		removeClient(clientSocket);
+			
+			handleCommand(clientSocket, clientMessage);
+		} while (clientMessage != "");
 	}
 
 	void Server::start() {
 		listenForClients();
-		SOCKET clientSocket = acceptClient();
+		SocketRAII clientSocket = acceptClient();
 
-		handleClietn(clientSocket);
+		handleClient(clientSocket);
 	}
 
 } // namespace server
