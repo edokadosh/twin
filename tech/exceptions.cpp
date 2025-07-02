@@ -13,25 +13,6 @@ namespace exceptions {
 		cout << "Error string:" << getErrString(errorCode) << endl;
 	}
 
-	int checkError(int success, string what_failed) {
-		int error_code = GetLastError();
-		if (error_code != ERROR_SUCCESS) {
-			cout << "Returned value: " << success << endl;
-			printError(error_code, what_failed);
-			throw WinAPIErrorException(what_failed);
-		}
-		return success;
-	}
-
-	LSTATUS checkStatus(LSTATUS status, string what_failed) {
-		int error_code = GetLastError();
-		if (status != ERROR_SUCCESS) {
-			printError(error_code, what_failed);
-			throw RegistryErrorException(what_failed);
-		}
-		return status;
-	}
-
 	string getErrString(int errorCode) {
 		if (errorCode == 0) {
 			return string();
@@ -51,5 +32,32 @@ namespace exceptions {
 		LocalFree(messageBuffer);
 
 		return message;
+	}
+
+	int checkError(int success, string what_failed) {
+		int error_code = GetLastError();
+		if (error_code != ERROR_SUCCESS) {
+			cout << "Returned value: " << success << endl;
+			printError(error_code, what_failed);
+			throw WinAPIErrorException(what_failed);
+		}
+		return success;
+	}
+
+	LSTATUS checkStatus(LSTATUS status, string what_failed) {
+		int error_code = GetLastError();
+		if (status != ERROR_SUCCESS) {
+			printError(error_code, what_failed);
+			throw RegistryErrorException(what_failed);
+		}
+		return status;
+	}
+
+	int checkWinSockError(int errorCode, const string& what_failed) {
+		if (errorCode == SOCKET_ERROR) {
+			printError(errorCode, what_failed);
+			throw WinSockErrorException(what_failed);
+		}
+		return errorCode;
 	}
 }

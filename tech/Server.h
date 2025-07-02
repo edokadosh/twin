@@ -9,6 +9,7 @@
 #include <map>
 #include "AddrInfoRAII.h"
 #include "SocketRAII.h"
+#include "exceptions.h"
 
 using std::string;
 using std::vector;
@@ -19,33 +20,13 @@ using std::runtime_error;
 
 using addrinfo_raii::AddrInfoRAII;
 using socket_raii::SocketRAII;
+using exceptions::WinSockErrorException;
 
 namespace server {
-
-	/**
-	 * @brief Exception class for WinSock errors
-	 */
-	class WinSockErrorException : public runtime_error {
-	public:
-		WinSockErrorException(const string msg) : runtime_error(msg) {}
-	};
-
-	int checkWinSockError(int errorCode, const string& what_failed);
 
 	const PCSTR DEFAULT_PORT = "12345";
 
 	class Server {
-	private:
-		SocketRAII m_listenSocket;
-		
-		void handleCommand(SocketRAII& clientSocket, const string& commandString);
-		void unknownCommand(SocketRAII& clientSocket);
-		
-		void handlePing(SocketRAII& clientSocket);
-
-		using CommandHandler = void (Server::*)(SocketRAII&);
-		map<string, CommandHandler> commandToHandler;
-
 	public:
 		/**
 		 * @brief Initializes the WinSock library
@@ -59,6 +40,18 @@ namespace server {
 		void handleClient(SocketRAII& clientSocket);
 
 		void start();
+
+	private:
+		SocketRAII m_listenSocket;
+
+		void handleCommand(SocketRAII& clientSocket, const string& commandString);
+		void unknownCommand(SocketRAII& clientSocket);
+
+		void handlePing(SocketRAII& clientSocket);
+
+		using CommandHandler = void (Server::*)(SocketRAII&);
+		map<string, CommandHandler> commandToHandler;
+
 	};
 
 }  // namespace server

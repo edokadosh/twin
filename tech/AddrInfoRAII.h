@@ -18,8 +18,6 @@ namespace addrinfo_raii {
      */
     class AddrInfoRAII
     {
-    private:
-        addrinfo* m_addrInfo;
     public:
         /**
          * @brief Constructor for AddrInfoRAII
@@ -35,6 +33,8 @@ namespace addrinfo_raii {
         AddrInfoRAII& operator=(const AddrInfoRAII& other) = delete;
         AddrInfoRAII& operator=(AddrInfoRAII&& other) noexcept;
         addrinfo* get() const;
+    private:
+        addrinfo* m_addrInfo;
     };
 
 } // namespace addrinfo_raii

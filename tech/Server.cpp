@@ -1,17 +1,10 @@
 #include "Server.h"
 #include "utils.h"
 
-using utils::printError;
+using exceptions::printError;
 
 namespace server {
 	
-	int checkWinSockError(int errorCode, const string& what_failed) {
-		if (errorCode == SOCKET_ERROR) {
-			printError(errorCode, what_failed);
-			throw WinSockErrorException(what_failed);
-		}
-		return errorCode;
-	}
 
 	Server::Server() {
 		WSADATA wsaData;
@@ -33,8 +26,6 @@ namespace server {
 	}
 
 	void Server::listenForClients() {
-		int iResult;
-
 		struct addrinfo hints;
 
 		ZeroMemory(&hints, sizeof(hints));
@@ -48,11 +39,8 @@ namespace server {
 		m_listenSocket = SocketRAII(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
 
 		// Setup the TCP listening socket
-		iResult = bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen);
-		if (iResult == SOCKET_ERROR) {
-			cout << "bind failed with error: " << WSAGetLastError() << endl;
-			throw WinSockErrorException("bind failed");
-		}
+		checkWinSockError(bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen));
+
 		checkWinSockError(listen(m_listenSocket.get(), SOMAXCONN), "listen");
 
 		cout << "Listening for connections on port: " << DEFAULT_PORT << endl;

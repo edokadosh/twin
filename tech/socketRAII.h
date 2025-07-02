@@ -25,8 +25,6 @@ namespace socket_raii {
      * @brief RAII class for managing socket resources.
      */
     class SocketRAII {
-    private:
-        SOCKET m_socket;
     public:
         /**
          * @brief Constructor that initializes the socket.
@@ -49,6 +47,8 @@ namespace socket_raii {
         int recv(char* buf, int len, int flags) const;
         int send(const string& str, int flags = 0);
         string recv(int flags = 0) const;
+    private:
+        SOCKET m_socket;
     };
 
 } // namespace socket_raii
