@@ -25,6 +25,17 @@ namespace server {
 
 		return tokens;
 	}
+
+	string join(const vector<string>& tokens, char delimiter) {
+		string result;
+		for (auto it : tokens) {
+			if (!result.empty()) {
+				result += delimiter;
+			}
+			result += it;
+		}
+		return result;
+	}
 	
 
 	Server::Server() {
@@ -74,7 +85,7 @@ namespace server {
 
 
 	void Server::handleCommand(SocketGuard& clientSocket, const string& commandString) {
-		vector<string> tokens = split(commandString);
+		vector<string> tokens = split(commandString, ' ');
 		if (tokens.empty()) {
 			unknownCommand(clientSocket);
 			return;
@@ -102,8 +113,10 @@ namespace server {
 
 	void Server::handleRun(SocketGuard& clientSocket, vector<string> args) {
 		string executePath = args[1];
+		string params = join(vector<string>(args.begin() + 2, args.end()), ' ');
+		std::cout << "Executing: " << executePath << " with params: " << params << std::endl;
 
-		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), NULL, NULL, SW_NORMAL)), "ShellExecuteA");
+		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), params.c_str(), NULL, SW_NORMAL)), "ShellExecuteA");
 		
 		int sent = clientSocket.send("DONE");
 	}

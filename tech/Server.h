@@ -32,6 +32,14 @@ namespace server {
 	 */
 	vector<string> split(const string& str, char delimiter = ' ');
 
+	/**
+	 * @brief Join a vector of strings into a single string with a delimiter
+	 * @param tokens The vector of strings to join
+	 * @param delimiter The character used to join the strings
+	 * @return A single string containing all tokens joined by the delimiter
+	 */
+	string join(const vector<string>& tokens, char delimiter = ' ');
+
 	class Server {
 	public:
 		/**
