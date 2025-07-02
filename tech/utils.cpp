@@ -2,14 +2,14 @@
 #include <iostream>
 
 #include "exceptions.h"
-#include "RegKeyRAII.h"
+#include "RegKeyGuard.h"
 
 using std::cout;
 using std::endl;
 using std::wcout;
 
 using exceptions::checkError;
-using regkey_raii::RegKeyRAII;
+using regkey_guard::RegKeyGuard;
 
 namespace utils {
 
@@ -19,7 +19,7 @@ namespace utils {
 		checkError(GetModuleFileNameW(NULL, exe_path, MAX_PATH), "GetModuleFileNameA");
 		wcout << "Current exe path: " << exe_path << endl;
 
-		RegKeyRAII regKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+		RegKeyGuard regKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run");
 		HKEY hkey = NULL;
 
 		regKey.setValue(L"management program autorun", REG_SZ, (BYTE*)exe_path, lstrlenW(exe_path) * 2 + 1);
