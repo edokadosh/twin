@@ -10,7 +10,7 @@ using exceptions::checkStatus;
 namespace regkey_guard {
 
     /**
-     * @brief RAII class for managing Windows registry keys.
+     * @brief Guard class for managing Windows registry keys.
      */
     class RegKeyGuard{
     public:
