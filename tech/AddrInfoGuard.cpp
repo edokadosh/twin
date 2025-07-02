@@ -1,28 +1,28 @@
-#include "AddrInfoRAII.h"
+#include "AddrInfoGuard.h"
 
-namespace addrinfo_raii {
+namespace addrinfo_guard {
 
-    AddrInfoRAII::AddrInfoRAII(const char* node, const char* service, const addrinfo* hints) {
+    AddrInfoGuard::AddrInfoGuard(const char* node, const char* service, const addrinfo* hints) {
         if (getaddrinfo(node, service, hints, &m_addrInfo) != 0) {
             throw runtime_error("getaddrinfo failed");
         }
     }
 
-    AddrInfoRAII::~AddrInfoRAII() {
+    AddrInfoGuard::~AddrInfoGuard() {
         freeaddrinfo(m_addrInfo);
     }
 
-    AddrInfoRAII::AddrInfoRAII(AddrInfoRAII&& other) noexcept
+    AddrInfoGuard::AddrInfoGuard(AddrInfoGuard&& other) noexcept
         : m_addrInfo(exchange(other.m_addrInfo, nullptr)) {
         //Left blank intentionally
     }
 
-    AddrInfoRAII& AddrInfoRAII::operator=(AddrInfoRAII&& other) noexcept {
+    AddrInfoGuard& AddrInfoGuard::operator=(AddrInfoGuard&& other) noexcept {
         swap(m_addrInfo, other.m_addrInfo);
         return *this;
     }
 
-    addrinfo* AddrInfoRAII::get() const {
+    addrinfo* AddrInfoGuard::get() const {
         return m_addrInfo;
     }
 
