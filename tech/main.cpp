@@ -1,9 +1,12 @@
 #include <stdexcept>
+#include <iostream>
+#include "pch.h"
 
+#include "utils.h"
+#include "exceptions.h"
 #include "Server.h"
 #include "SingleRunningInstanceVerifier.h"
-#include "pch.h"
-#include "utils.h"
+
 
 
 using std::cerr;
@@ -13,7 +16,7 @@ using std::runtime_error;
 using server::Server;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
 using utils::addToAutoruns;
-using utils::checkError;
+using exceptions::checkError;
 using single_running_instance_verifier::SingleRunningInstanceVerifier;
 
 const DWORD HOUR_MILLISEC = 60 * 60 * 1000;
