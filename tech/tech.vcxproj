@@ -138,7 +138,7 @@
     <ClCompile Include="RegKeyGuard.cpp" />
     <ClCompile Include="SingleRunningInstanceVerifier.cpp" />
     <ClCompile Include="Server.cpp" />
-    <ClCompile Include="socketRAII.cpp" />
+    <ClCompile Include="socketGuard.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +149,7 @@
     <ClInclude Include="RegKeyGuard.h" />
     <ClInclude Include="SingleRunningInstanceVerifier.h" />
     <ClInclude Include="Server.h" />
-    <ClInclude Include="socketRAII.h" />
+    <ClInclude Include="socketGuard.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

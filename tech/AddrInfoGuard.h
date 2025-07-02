@@ -13,14 +13,14 @@ using std::runtime_error;
 namespace addrinfo_guard {
 
     /**
-     * @brief RAII class for managing addrinfo structures.
+     * @brief Guard class for managing addrinfo structures.
      * This class ensures that the addrinfo structure is freed when it goes out of scope.
      */
     class AddrInfoGuard
     {
     public:
         /**
-         * @brief Constructor for AddrInfoRAII
+         * @brief Constructor for AddrInfoGuard
          * @param node Node name to pass to getaddrinfo
          * @param service Service name to pass to getaddrinfo 
          * @param hints Hints to pass to getaddrinfo

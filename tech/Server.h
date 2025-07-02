@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <map>
 #include <vector>
-#include "SocketRAII.h"
+
+#include "SocketGuard.h"
 
 using std::string;
 using std::vector;
@@ -17,8 +18,7 @@ using std::cout;
 using std::endl;
 using std::runtime_error;
 
-using socket_raii::SocketRAII;
-using exceptions::WinSockErrorException;
+using socket_guard::SocketGuard;
 
 namespace server {
 
@@ -34,20 +34,20 @@ namespace server {
 		~Server();
 
 		void listenForClients();
-		SocketRAII acceptClient();
-		void handleClient(SocketRAII& clientSocket);
+		SocketGuard acceptClient();
+		void handleClient(SocketGuard& clientSocket);
 
 		void start();
 
 	private:
-		SocketRAII m_listenSocket;
+		SocketGuard m_listenSocket;
 
-		void handleCommand(SocketRAII& clientSocket, const string& commandString);
-		void unknownCommand(SocketRAII& clientSocket);
+		void handleCommand(SocketGuard& clientSocket, const string& commandString);
+		void unknownCommand(SocketGuard& clientSocket);
 
-		void handlePing(SocketRAII& clientSocket);
+		void handlePing(SocketGuard& clientSocket);
 
-		using CommandHandler = void (Server::*)(SocketRAII&);
+		using CommandHandler = void (Server::*)(SocketGuard&);
 		map<string, CommandHandler> commandToHandler;
 
 	};

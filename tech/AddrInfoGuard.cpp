@@ -26,4 +26,4 @@ namespace addrinfo_guard {
         return m_addrInfo;
     }
 
-} // namespace addrinfo_raii
+} // namespace addrinfo_guard
