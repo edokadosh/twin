@@ -8,52 +8,45 @@ HANDLE singleInstanceMutex;
 
 namespace utils {
 
-	WinAPIErrorException::WinAPIErrorException(const string msg) : message(msg) {
-	// Left blank intentionally
-	}
-	const char* WinAPIErrorException::what() const noexcept {
-		return message.c_str();
-	}
-	RegistryErrorException::RegistryErrorException(const string msg) : message(msg) {
-	// Left blank intentionally
-	}
-	const char* RegistryErrorException::what() const noexcept {
-		return message.c_str();
+	void printError(int errorCode, string what_failed) {
+		cout << what_failed << " - failed with error: " << errorCode << endl;
+		cout << "Error string:" << getErrString(errorCode) << endl;
 	}
 
-
-	int checkError(int success, std::string what_failed) {
-		int error_code = ::GetLastError();
+	int checkError(int success, string what_failed) {
+		int error_code = GetLastError();
 		if (error_code != ERROR_SUCCESS) {
-			cout << what_failed << " - failed with error: " << error_code << endl;
 			cout << "Returned value: " << success << endl;
-			cout << "Error string:" << getErrString() << endl;
+			printError(error_code, what_failed);
 			throw WinAPIErrorException(what_failed);
 		}
 		return success;
 	}
 
-	LSTATUS checkStatus(LSTATUS status, std::string what_failed) {
+	LSTATUS checkStatus(LSTATUS status, string what_failed) {
+		int error_code = GetLastError();
 		if (status != ERROR_SUCCESS) {
-			cout << what_failed << " - failed with error: " << GetLastError() << endl;
-			cout << "Error string:" << getErrString() << endl;
+			printError(error_code, what_failed);
 			throw RegistryErrorException(what_failed);
 		}
 		return status;
 	}
 
-	std::string getErrString() {
-		DWORD errorMessageID = ::GetLastError();
-		if (errorMessageID == 0) {
-			return std::string();
+	string getErrString(int errorCode) {
+		if (errorCode == 0) {
+			return string();
 		}
 
     LPSTR messageBuffer = nullptr;
 
-    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
-    std::string message(messageBuffer, size);
+		if (size == 0) {
+			throw WinAPIErrorException("FormatMessageA failed");
+		}
+
+		string message(messageBuffer, size);
 
     LocalFree(messageBuffer);
 

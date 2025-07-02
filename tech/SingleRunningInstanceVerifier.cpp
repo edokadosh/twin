@@ -9,24 +9,21 @@ using std::swap;
 using std::cout;
 using std::endl;
 
-using utils::checkError;
+using utils::printError;
+using utils::WinAPIErrorException;
 
 namespace single_running_instance_verifier {
 
-	InstanceExistsException::InstanceExistsException(const string msg) : message(msg) {
-		// Left blank intentionally
-	}
-	const char* InstanceExistsException::what() const noexcept {
-		return message.c_str();
-	}
-
 	SingleRunningInstanceVerifier::SingleRunningInstanceVerifier() : m_singleInstanceMutex(CreateMutexW(NULL, false, SINGLE_INSTANCE_MUTEX_NAME)) {
-		int error_code = ::GetLastError();
-		if (error_code == ERROR_ALREADY_EXISTS) {
+		int errorCode = ::GetLastError();
+		if (errorCode == ERROR_ALREADY_EXISTS) {
 			cout << "Instance of program is already running!" << endl;
 			throw InstanceExistsException("Instance of program is already running!");
 		}
-		checkError(error_code, "CreateMutexA");
+		if (errorCode != ERROR_SUCCESS) {
+			printError(errorCode, "CreateMutexW");
+			throw WinAPIErrorException("CreateMutexW failed");
+		}
 	}
 
 	SingleRunningInstanceVerifier::~SingleRunningInstanceVerifier() {
