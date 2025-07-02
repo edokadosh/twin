@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="AddrInfoRAII.cpp" />
     <ClCompile Include="exceptions.cpp" />
+    <ClCompile Include="FileRAII.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="RegKeyRAII.cpp" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="AddrInfoRAII.h" />
     <ClInclude Include="exceptions.h" />
+    <ClInclude Include="FileRAII.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegKeyRAII.h" />

@@ -37,7 +37,7 @@ namespace server {
 		}
 		return result;
 	}
-	
+
 
 	Server::Server() {
 		WSADATA wsaData;
@@ -51,7 +51,8 @@ namespace server {
 
 		commandToHandler = {
 			{ "PING", &Server::handlePing },
-			{ "RUN", &Server::handleRun }
+			{ "RUN", &Server::handleRun },
+			{ "UPLOAD", &Server::handleUpload }
 		};
 	}
 
@@ -118,8 +119,12 @@ namespace server {
 		std::cout << "Executing: " << executePath << " with params: " << params << std::endl;
 
 		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), params.c_str(), NULL, SW_NORMAL)), "ShellExecuteA");
-		
+
 		int sent = clientSocket.send("DONE");
+	}
+
+	void Server::handleUpload(SocketRAII& clientSocket, vector<string> args) {
+
 	}
 
 	void Server::handleClient(SocketRAII& clientSocket) {
@@ -132,7 +137,7 @@ namespace server {
 				cout << "Connection closing..." << endl;
 				continue;
 			}
-			
+
 			handleCommand(clientSocket, clientMessage);
 		} while (clientMessage != "");
 	}

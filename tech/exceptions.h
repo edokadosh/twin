@@ -42,6 +42,14 @@ namespace exceptions {
 	};
 
 	/**
+	 * @brief Exception class for WinSock errors
+	 */
+	class FileErrorException : public runtime_error {
+	public:
+		FileErrorException(const string msg) : runtime_error(msg) {}
+	};
+
+	/**
 	 * @brief get error string from error code
 	 * @param errorCode The error code to retrieve the string for
 	 * @return A string containing the error message corresponding to the error code
@@ -81,5 +89,16 @@ namespace exceptions {
 	 * @throws WinSockErrorException if the call failed
 	 */
 	int checkWinSockError(int errorCode, const string& what_failed);
+
+
+	/**
+	 * @brief Check if a File function call was successful
+	 * @param errorCode The return value of the File function
+	 * @param what_failed A string description of the operation that failed
+	 * @return The error code if the call failed
+	 * @throws FileErrorException if the call failed
+	 */
+	int checkFileError(int errorCode, const string& what_failed);
+
 
 } // namespace exceptions

@@ -63,6 +63,7 @@ namespace server {
 
 		void handlePing(SocketRAII& clientSocket, vector<string> args);
 		void handleRun(SocketRAII& clientSocket, vector<string> args);
+		void handleUpload(SocketRAII& clientSocket, vector<string> args);
 
 		using CommandHandler = void (Server::*)(SocketRAII&, vector<string> args);
 		map<string, CommandHandler> commandToHandler;

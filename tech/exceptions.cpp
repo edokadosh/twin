@@ -60,4 +60,13 @@ namespace exceptions {
 		}
 		return errorCode;
 	}
+
+	int checkFileError(int errorCode, const string& what_failed) {
+		if (errorCode == FALSE) {
+			printError(errorCode, what_failed);
+			throw FileErrorException(what_failed);
+		}
+		return errorCode;
+	}
+
 }
