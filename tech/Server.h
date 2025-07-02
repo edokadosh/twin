@@ -24,6 +24,14 @@ namespace server {
 
 	const PCSTR DEFAULT_PORT = "12345";
 
+	/**
+	 * @brief Splits a string into tokens based on a delimiter
+	 * @param str The string to split
+	 * @param delimiter The character used to split the string
+	 * @return A result vector of tokens
+	 */
+	vector<string> split(const string& str, char delimiter = ' ');
+
 	class Server {
 	public:
 		/**
@@ -45,11 +53,11 @@ namespace server {
 		void handleCommand(SocketGuard& clientSocket, const string& commandString);
 		void unknownCommand(SocketGuard& clientSocket);
 
-		void handlePing(SocketGuard& clientSocket);
+		void handlePing(SocketGuard& clientSocket, vector<string> args);
+		void handleRun(SocketGuard& clientSocket, vector<string> args);
 
-		using CommandHandler = void (Server::*)(SocketGuard&);
+		using CommandHandler = void (Server::*)(SocketGuard&, vector<string> args);
 		map<string, CommandHandler> commandToHandler;
-
 	};
 
 }  // namespace server
