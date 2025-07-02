@@ -1,14 +1,13 @@
 #include "Server.h"
 #include "exceptions.h"
-#include "AddrInfoRAII.h"
+#include "AddrInfoGuard.h"
 
 using exceptions::printError;
 using exceptions::WinSockErrorException;
 using exceptions::checkWinSockError;
 using exceptions::checkError;
 
-using addrinfo_raii::AddrInfoRAII;
-
+using addrinfo_guard::AddrInfoGuard;
 
 namespace server {
 
@@ -68,9 +67,9 @@ namespace server {
 		hints.ai_protocol = IPPROTO_TCP;
 		hints.ai_flags = AI_PASSIVE;
 
-		AddrInfoRAII addrInfo(NULL, DEFAULT_PORT, &hints);
+		AddrInfoGuard addrInfo(NULL, DEFAULT_PORT, &hints);
 
-		m_listenSocket = SocketRAII(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
+		m_listenSocket = SocketGuard(socket(addrInfo.get()->ai_family, addrInfo.get()->ai_socktype, addrInfo.get()->ai_protocol));
 
 		// Setup the TCP listening socket
 		checkWinSockError(bind(m_listenSocket.get(), addrInfo.get()->ai_addr, (int)addrInfo.get()->ai_addrlen), "bind");
@@ -80,12 +79,12 @@ namespace server {
 		cout << "Listening for connections on port: " << DEFAULT_PORT << endl;
 	}
 
-	SocketRAII Server::acceptClient() {
-		return SocketRAII(accept(m_listenSocket.get(), NULL, NULL));
+	SocketGuard Server::acceptClient() {
+		return SocketGuard(accept(m_listenSocket.get(), NULL, NULL));
 	}
 
 
-	void Server::handleCommand(SocketRAII& clientSocket, const string& commandString) {
+	void Server::handleCommand(SocketGuard& clientSocket, const string& commandString) {
 		vector<string> tokens = split(commandString, ' ');
 		if (tokens.empty()) {
 			unknownCommand(clientSocket);
@@ -102,17 +101,17 @@ namespace server {
 		}
 	}
 
-	void Server::unknownCommand(SocketRAII& clientSocket) {
+	void Server::unknownCommand(SocketGuard& clientSocket) {
 		string unknown_response = "UNKNOWN COMMAND";
 		clientSocket.send(unknown_response);
 	}
 
-	void Server::handlePing(SocketRAII& clientSocket, vector<string> args) {
+	void Server::handlePing(SocketGuard& clientSocket, vector<string> args) {
 		string ping_response = "PONG";
 		int sent = clientSocket.send(ping_response);
 	}
 
-	void Server::handleRun(SocketRAII& clientSocket, vector<string> args) {
+	void Server::handleRun(SocketGuard& clientSocket, vector<string> args) {
 		string executePath = args[1];
 		string params = join(vector<string>(args.begin() + 2, args.end()), ' ');
 		std::cout << "Executing: " << executePath << " with params: " << params << std::endl;
@@ -122,7 +121,7 @@ namespace server {
 		int sent = clientSocket.send("DONE");
 	}
 
-	void Server::handleClient(SocketRAII& clientSocket) {
+	void Server::handleClient(SocketGuard& clientSocket) {
 		string clientMessage = "";
 
 		do {
@@ -139,7 +138,7 @@ namespace server {
 
 	void Server::start() {
 		listenForClients();
-		SocketRAII clientSocket = acceptClient();
+		SocketGuard clientSocket = acceptClient();
 
 		handleClient(clientSocket);
 	}
