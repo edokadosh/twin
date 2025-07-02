@@ -25,4 +25,4 @@ namespace regkey_guard {
         checkStatus(RegSetValueExW(m_hKey, valueName.c_str(), 0, type, data, dataSize), "RegSetValueExW");
     }
 
-} // namespace regkey_raii
+} // namespace regkey_guard
