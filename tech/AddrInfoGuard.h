@@ -10,7 +10,7 @@ using std::swap;
 
 using std::runtime_error;
 
-namespace addrinfo_guard {
+namespace addrinfo_Guard {
 
     /**
      * @brief Guard class for managing addrinfo structures.
@@ -37,7 +37,7 @@ namespace addrinfo_guard {
         addrinfo* m_addrInfo;
     };
 
-} // namespace addrinfo_guard
+} // namespace addrinfo_Guard
 
 
 

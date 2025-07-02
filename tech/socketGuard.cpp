@@ -8,7 +8,7 @@ using std::endl;
 using exceptions::checkWinSockError;
 using exceptions::WinSockErrorException;
 
-namespace socket_guard {
+namespace socket_Guard {
 
     SocketGuard::SocketGuard() : m_socket(INVALID_SOCKET) {
         // Left blank intentionally
@@ -63,14 +63,31 @@ namespace socket_guard {
         return send(str.c_str(), static_cast<int>(str.length()), flags);
     }
 
-    string SocketGuard::recv(int flags) const {
+    string SocketGuard::recvString(int flags) const {
         char buf[DEFAULT_BUFLEN + 1];
         int result = recv(buf, DEFAULT_BUFLEN, flags);
         if (result > 0) {
-            buf[result] = '\0'; 
+            buf[result] = '\0';
             return string(buf);
         }
         return string(); 
     }
 
-} // namespace socket_guard
+    vector<char> SocketGuard::recvBytes(int flags) const {
+        vector<char> result;
+        vector<char> buffer(DEFAULT_BUFLEN);
+        int bytesRead = 0;
+
+        do {
+            bytesRead = recv(buffer.data(), DEFAULT_BUFLEN, flags);
+            if (bytesRead > 0) {
+                result.insert(result.end(), buffer.begin(), buffer.begin() + bytesRead);
+            }
+        } while (bytesRead > 0);
+
+        result.shrink_to_fit();
+        return result;
+    }
+
+
+} // namespace socket_Guard

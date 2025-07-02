@@ -8,9 +8,26 @@ def main():
     
     while True:
         message = input("Enter message to send (or 'exit' to quit): ")
-        if message.lower() == 'exit':
+        command = message.split()
+        if command[0] == 'exit':
             break
-        client_socket.sendall(message.encode())
+        elif command[0] == 'UPLOAD':
+            filename = command[1]
+            target_filename = command[2]
+            try:
+                with open(filename, 'rb') as file:
+                    file_data = file.read()
+                client_socket.sendall(f"UPLOAD {target_filename}".encode())
+                response = client_socket.recv(1024).decode()
+                if response == "READY":
+                    client_socket.sendall(file_data)
+                    print(f"File '{filename}' uploaded successfully.")
+                else:
+                    print("Server did not acknowledge upload request.")
+            except FileNotFoundError:
+                print(f"File '{filename}' not found.")
+        else:
+            client_socket.sendall(message.encode())
         response = client_socket.recv(1024).decode()
         print(f"Received: {response}")
 

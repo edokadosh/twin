@@ -18,11 +18,14 @@ using std::cout;
 using std::endl;
 using std::runtime_error;
 
-using socket_guard::SocketGuard;
+using socket_Guard::SocketGuard;
 
 namespace server {
 
 	const PCSTR DEFAULT_PORT = "12345";
+	const string MESSAGE_PING_RESPONSE = "PONG";
+	const string MESSAGE_DONE = "DONE";
+	const string MESSAGE_READY = "READY";
 
 	/**
 	 * @brief Splits a string into tokens based on a delimiter

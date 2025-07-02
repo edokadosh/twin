@@ -7,7 +7,7 @@ using std::wstring;
 
 using exceptions::checkStatus;
 
-namespace regkey_guard {
+namespace regkey_Guard {
 
     /**
      * @brief Guard class for managing Windows registry keys.
@@ -33,6 +33,6 @@ namespace regkey_guard {
         HKEY m_hKey;
     };
 
-} // namespace regkey_guard
+} // namespace regkey_Guard
 
 

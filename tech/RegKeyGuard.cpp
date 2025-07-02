@@ -4,7 +4,7 @@
 using std::cerr;
 using std::endl;
 
-namespace regkey_guard {
+namespace regkey_Guard {
 
     RegKeyGuard::RegKeyGuard(HKEY hKey, const wstring& subKey) : m_hKey(NULL) {
         checkStatus(RegCreateKeyW(hKey, subKey.c_str(), &m_hKey), "RegCreateKeyW");
@@ -25,4 +25,4 @@ namespace regkey_guard {
         checkStatus(RegSetValueExW(m_hKey, valueName.c_str(), 0, type, data, dataSize), "RegSetValueExW");
     }
 
-} // namespace regkey_guard
+} // namespace regkey_Guard

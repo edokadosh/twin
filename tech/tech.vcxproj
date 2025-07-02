@@ -133,7 +133,7 @@
   <ItemGroup>
     <ClCompile Include="AddrInfoGuard.cpp" />
     <ClCompile Include="exceptions.cpp" />
-    <ClCompile Include="FileRAII.cpp" />
+    <ClCompile Include="FileGuard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="RegKeyGuard.cpp" />
@@ -145,7 +145,7 @@
   <ItemGroup>
     <ClInclude Include="AddrInfoGuard.h" />
     <ClInclude Include="exceptions.h" />
-    <ClInclude Include="FileRAII.h" />
+    <ClInclude Include="FileGuard.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RegKeyGuard.h" />

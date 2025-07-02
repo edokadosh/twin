@@ -6,24 +6,24 @@
 using std::string;
 using std::vector;
 
-namespace file_raii {
+namespace file_guard {
 
-	const size_t BUFFER_SIZE = 1048;
+	const size_t BUFFER_SIZE = 1024;
 
-	class FileRAII {
+	class FileGuard {
 	public:
 		/**
-		 * @brief Constructor for FileRAII
+		 * @brief Constructor for FileGuard
 		 * @param name The name of the file to open
 		 * @param access The access mode (GENERIC_READ or GENERIC_WRITE)
 		 * @throws FileErrorException if the file cannot be opened
 		 */
-		FileRAII(string name, int access);
-		~FileRAII();
-		FileRAII(const FileRAII& other) = delete;
-		FileRAII(FileRAII&& other) noexcept = delete;
-		FileRAII& operator=(const FileRAII& other) = delete;
-		FileRAII& operator=(FileRAII&& other) noexcept = delete;
+		FileGuard(string name, int access);
+		~FileGuard();
+		FileGuard(const FileGuard& other) = delete;
+		FileGuard(FileGuard&& other) noexcept = delete;
+		FileGuard& operator=(const FileGuard& other) = delete;
+		FileGuard& operator=(FileGuard&& other) noexcept = delete;
 
 		vector<char> read();
 		void write(const vector<char>& data);

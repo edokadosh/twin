@@ -1,6 +1,6 @@
 #include "AddrInfoGuard.h"
 
-namespace addrinfo_guard {
+namespace addrinfo_Guard {
 
     AddrInfoGuard::AddrInfoGuard(const char* node, const char* service, const addrinfo* hints) {
         if (getaddrinfo(node, service, hints, &m_addrInfo) != 0) {
@@ -26,4 +26,4 @@ namespace addrinfo_guard {
         return m_addrInfo;
     }
 
-} // namespace addrinfo_guard
+} // namespace addrinfo_Guard

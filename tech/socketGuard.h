@@ -5,14 +5,16 @@
 #include <stdexcept>
 #include <utility>
 #include <string>
+#include <vector>
 
 using std::exchange;
 using std::swap;
 using std::string;
+using std::vector;
 
-namespace socket_guard {
+namespace socket_Guard {
 
-	const size_t DEFAULT_BUFLEN = 512;
+	const size_t DEFAULT_BUFLEN = 1024;
 
     /**
      * @brief Guard class for managing socket resources.
@@ -39,10 +41,12 @@ namespace socket_guard {
         int send(const char* buf, int len, int flags) const;
         int recv(char* buf, int len, int flags) const;
         int send(const string& str, int flags = 0);
-        string recv(int flags = 0) const;
+        string recvString(int flags = 0) const;
+        vector<char> recvBytes(int flags = 0) const;
+
     private:
         SOCKET m_socket;
     };
 
-} // namespace socket_guard
+} // namespace socket_Guard
 

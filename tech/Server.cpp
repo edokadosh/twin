@@ -1,13 +1,15 @@
 #include "Server.h"
 #include "exceptions.h"
 #include "AddrInfoGuard.h"
+#include "FileGuard.h"
 
 using exceptions::printError;
 using exceptions::WinSockErrorException;
 using exceptions::checkWinSockError;
 using exceptions::checkError;
 
-using addrinfo_guard::AddrInfoGuard;
+using addrinfo_Guard::AddrInfoGuard;
+using file_guard::FileGuard;
 
 namespace server {
 
@@ -108,7 +110,7 @@ namespace server {
 	}
 
 	void Server::handlePing(SocketGuard& clientSocket, vector<string> args) {
-		string ping_response = "PONG";
+		string ping_response = MESSAGE_PING_RESPONSE;
 		int sent = clientSocket.send(ping_response);
 	}
 
@@ -119,10 +121,19 @@ namespace server {
 
 		checkError((INT_PTR)(ShellExecuteA(NULL, NULL, executePath.c_str(), params.c_str(), NULL, SW_NORMAL)), "ShellExecuteA");
 
-		int sent = clientSocket.send("DONE");
+		int sent = clientSocket.send(MESSAGE_DONE);
 	}
 
 	void Server::handleUpload(SocketGuard& clientSocket, vector<string> args) {
+		string fileName = args[1];
+		clientSocket.send(MESSAGE_READY);
+		vector<char> fileBytes = clientSocket.recvBytes();
+
+		cout << "Received file: " << fileName << " with size: " << fileBytes.size() << " bytes." << endl;
+
+		FileGuard file(fileName, GENERIC_WRITE);
+		file.write(fileBytes);
+		clientSocket.send(MESSAGE_DONE);
 
 	}
 
@@ -130,7 +141,7 @@ namespace server {
 		string clientMessage = "";
 
 		do {
-			clientMessage = clientSocket.recv();
+			clientMessage = clientSocket.recvString();
 
 			if (clientMessage == "") {
 				cout << "Connection closing..." << endl;

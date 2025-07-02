@@ -9,7 +9,7 @@ using std::endl;
 using std::wcout;
 
 using exceptions::checkError;
-using regkey_guard::RegKeyGuard;
+using regkey_Guard::RegKeyGuard;
 
 namespace utils {
 

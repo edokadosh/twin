@@ -1,14 +1,18 @@
-#include "FileRAII.h"
+#include "FileGuard.h"
+#include <iostream>
 #include "exceptions.h"
+
+using std::cerr;
+using std::endl;
 
 using exceptions::printError;
 using exceptions::checkError;
 using exceptions::FileErrorException;
 using exceptions::checkFileError;
 
-namespace file_raii {
+namespace file_guard {
 
-	FileRAII::FileRAII(string name, int access) {
+	FileGuard::FileGuard(string name, int access) {
 		switch (access) {
 		case GENERIC_READ:
 			m_file = CreateFileA(
@@ -42,13 +46,19 @@ namespace file_raii {
 		}
 	}
 
-	FileRAII::~FileRAII() {
+	FileGuard::~FileGuard() {
 		if (m_file != INVALID_HANDLE_VALUE) {
-			checkError(CloseHandle(m_file), "CloseHandle");
+			try {
+				checkError(CloseHandle(m_file), "CloseHandle");
+			}
+			catch (const std::runtime_error& e) {
+				cerr << "FileGuard destructor failed: " << e.what() << endl;
+			}
+
 		}
 	}
 
-	vector<char> FileRAII::read() {
+	vector<char> FileGuard::read() {
 		vector<char> result;
 		vector<char> buffer(BUFFER_SIZE);
 		DWORD bytesRead = 0;
@@ -65,7 +75,7 @@ namespace file_raii {
 	}
 
 
-	void FileRAII::write(const vector<char>& data) {
+	void FileGuard::write(const vector<char>& data) {
 		DWORD bytesWritten = 0;
 		size_t totalBytesWritten = 0;
 
@@ -76,4 +86,4 @@ namespace file_raii {
 		}
 	}
 
-} //namespace file_raii
+} //namespace file_guard
